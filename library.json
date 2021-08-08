@@ -8,7 +8,7 @@
         "name": "Amir Blum",
         "email": "amirgiraffe@gmail.com",
         "maintainer": true
-    }
+    },
     "dependencies":
     {
         "greiman/SdFat": "1.1.4",
