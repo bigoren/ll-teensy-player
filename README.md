@@ -26,3 +26,7 @@ The loaded file format should contain:
 Then user can apply any required appl-logic, and call the function `bool show_next_frame()` to read next frame from the SD card and send it to the LEDs. Function return true if all goes well, and false in case of error (no file loaded \ end of file \ coruppted data).
 
 To detect if a new file should be loaded, user can call `bool is_file_playing()`. If the function returns `false`, a new file should be loaded to the library.
+
+# Added features
+- `bool setBrightness()` function to set global brightness levels (0-255), default is full brightness (255)
+- load_file() function now supports loading of new file before previous file finished, replacing it with new file
