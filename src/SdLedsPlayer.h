@@ -23,6 +23,7 @@ public:
   // will read the next frame from the loaded file and send it to the leds.
   // return true on success and false in case no frame is available.
   bool show_next_frame();
+  bool setBrightness(uint8_t brightness);
 
 public:
   // read a new file from sd card for led display
@@ -36,6 +37,7 @@ private:
   static const int CHANNELS_PER_PIXEL = 3; // DO NOT CHANGE!
   const int total_pixels;
   const int bytes_per_frame;
+  uint8_t brightFactor = 255;
 
 private:
   // OctoWS2811 stuff

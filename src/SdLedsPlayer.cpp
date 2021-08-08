@@ -10,6 +10,9 @@ void SdLedsPlayer::load_file(const char *file_name) {
     sd.initErrorHalt("SdFatSdioEX begin() failed");
   }
   sd.chvol();
+  if (is_file_playing()) {
+    current_file.close();
+  }
   if (!current_file.open(file_name, O_RDONLY)) {
     sd.errorHalt("open failed");
   }
@@ -18,6 +21,11 @@ void SdLedsPlayer::load_file(const char *file_name) {
 
 bool SdLedsPlayer::is_file_playing() {
   return current_file.isOpen();
+}
+
+bool SdLedsPlayer::setBrightness(uint8_t brightness) {
+  brightFactor = brightness;
+  return true;
 }
 
 bool SdLedsPlayer::show_next_frame() {
@@ -38,8 +46,12 @@ bool SdLedsPlayer::show_next_frame() {
     Serial.print("read frame with missing bytes.");
     return false;
   }
+  uint8_t r,g,b;
   for(int i=0; i< total_pixels; i++) {
-    leds.setPixel(i, frame_buf[3*i], frame_buf[3*i+1], frame_buf[3*i+2]);
+    r = (frame_buf[3*i] * brightFactor) >> 8;
+    g = (frame_buf[3*i+1] * brightFactor) >> 8;
+    b = (frame_buf[3*i+2] * brightFactor) >> 8;
+    leds.setPixel(i, r, g, b);
   }
   leds.show();
   return true;
