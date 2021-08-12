@@ -1,6 +1,6 @@
 {
     "name": "ll-teensy-player",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Enables reading led data frames from SD card and sending it to addressable leds. This library should be used on teensy 3.5 to read files from the SD card which contains rgb arrays grouped into frames. each frame is read and written to OctoWS2811 for display on ws2811 led modules.",
     "keywords": "Display",
     "authors":

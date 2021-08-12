@@ -16,14 +16,16 @@ The library let the user handle the main loop, so that extra logic can be done b
 
 User should call the function `void setup()` once to initialize the object.
 
-Then it should call the function `void load_file(const char *file_name)` to load a new file from SD for display.
+Then call the function `void load_file(const char *file_name)` to open a new file from the SD for display.
 The loaded file format should contain:
-- The file does not contain any header. only rgb buffers.
+- The file does not have a file header. only frame buffers.
 - N frames
-- Each frame contains (8 * leds_per_strip) pixels. it is the user's responsibility to check that the loaded file was generated with the correct amount of pixels per strip.
-- Each pixel should contain 3 bytes of data. the data will be sent to the LED modules in the order found in the file, so user should match the file's RGB ordering to the LED harrdware RGB order.
+- Each frame contains 4 bytes of timestamp data and (8 * leds_per_strip) pixels. it is the user's responsibility to check that the loaded file was generated with the correct amount of pixels per strip.
+- Each pixel should contain 3 bytes of data. the data will be sent to the LED modules in the order found in the file, so user should match the file's RGB ordering to the LED hardware RGB order.
 
-Then user can apply any required appl-logic, and call the function `bool show_next_frame()` to read next frame from the SD card and send it to the LEDs. Function return true if all goes well, and false in case of error (no file loaded \ end of file \ coruppted data).
+To load a frame from the open file to the led array call `unsigned long load_next_frame`, the returned value is the frame timestamp from start of song in milliseconds, used for frame timing purposes.  
+Function return a positive number if all goes well, and 0 in case of error (no file loaded \ end of file \ corrupt data).  
+Then user can apply any desired appl-logic and call the function `void show_next_frame()` to send the loaded frame to the actual LEDs.
 
 To detect if a new file should be loaded, user can call `bool is_file_playing()`. If the function returns `false`, a new file should be loaded to the library.
 

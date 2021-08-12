@@ -28,31 +28,36 @@ bool SdLedsPlayer::setBrightness(uint8_t brightness) {
   return true;
 }
 
-bool SdLedsPlayer::show_next_frame() {
-  
+unsigned long SdLedsPlayer::load_next_frame() {
   if(!is_file_playing()) {
-    return false;
+    return 0;
   }
-  
   int bytes_read = current_file.read(frame_buf, bytes_per_frame);
   if (bytes_read < 0) {
     sd.errorHalt("read failed");
   }  
   if(bytes_read == 0) {
     current_file.close();  
-    return false;
+    return 0;
   }
   if(bytes_read < bytes_per_frame) {
     Serial.print("read frame with missing bytes.");
-    return false;
+    return 0;
   }
+  unsigned long timestamp = ( (frame_buf[3] << 24) 
+                   + (frame_buf[2] << 16) 
+                   + (frame_buf[1] << 8) 
+                   + (frame_buf[0] ));
   uint8_t r,g,b;
   for(int i=0; i< total_pixels; i++) {
-    r = (frame_buf[3*i] * brightFactor) >> 8;
-    g = (frame_buf[3*i+1] * brightFactor) >> 8;
-    b = (frame_buf[3*i+2] * brightFactor) >> 8;
+    r = (frame_buf[3*i+TIME_HEADER_SIZE] * brightFactor) >> 8;
+    g = (frame_buf[3*i+1+TIME_HEADER_SIZE] * brightFactor) >> 8;
+    b = (frame_buf[3*i+2+TIME_HEADER_SIZE] * brightFactor) >> 8;
     leds.setPixel(i, r, g, b);
   }
+  return timestamp;
+}
+
+void SdLedsPlayer::show_next_frame() {
   leds.show();
-  return true;
 }
