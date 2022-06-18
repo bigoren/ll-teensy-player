@@ -1,6 +1,7 @@
 # ll-teensy-player
 Teensy library that play led frames from SD card.
 Library was written and tested for teensy 3.5, with OctoWS2811 and builtin SD slot on the board.
+Version 2.0.0 tested on teensy 4.1, with OctoWS2811 and builtin SD slot on the board.
 
 # Installation
 Download the library as zip. open Arduino IDE and go to Sketch -> Include Library -> Add .ZIP library...
