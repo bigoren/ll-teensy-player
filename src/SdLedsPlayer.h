@@ -1,7 +1,7 @@
 #ifndef SD_LEDS_PLAYER_H__
 #define SD_LEDS_PLAYER_H__
 
-#include "SdFat.h"
+#include "SD.h"
 #include "OctoWS2811.h"
 
 
@@ -19,7 +19,7 @@ SdLedsPlayer(unsigned int leds_per_strip, void *display_memory, void *drawing_me
 
 public:
   // call once for initialization
-  void setup();
+  bool setup();
   // will read the next frame from the loaded file and write it to the leds array
   // returns long timestamp header info on success and 0 in case no frame is available.
   unsigned long load_next_frame();
@@ -29,7 +29,7 @@ public:
 
 public:
   // read a new file from sd card for led display
-  void load_file(const char *file_name);
+  bool load_file(const char *file_name);
   // return true if there is a file loaded, and there are more frames ready for display
   bool is_file_playing();
 
@@ -47,9 +47,9 @@ private:
   OctoWS2811 leds;
 
 private:
-  // SdFat stuff
+  // Sd stuff
   uint8_t *frame_buf;
-  SdFatSdioEX sd;
+  bool SDStatus;
   File current_file;
   
 };

@@ -1,26 +1,43 @@
 
 #include "SdLedsPlayer.h"
 
-void SdLedsPlayer::setup() {
-  leds.begin();    
+// Use this with the Teensy 3.5 & 3.6 & 4.1 SD card
+#define SDCARD_CS_PIN    BUILTIN_SDCARD
+
+bool SdLedsPlayer::setup() {
+  SDStatus = SD.begin(SDCARD_CS_PIN);
+  if (!SDStatus) {
+    Serial.print("SD card begin() failed using pin: "); Serial.println(SDCARD_CS_PIN);
+    return false;
+  }
+  leds.begin();  
+  return true;  
 }
 
-void SdLedsPlayer::load_file(const char *file_name) {
-  if (!sd.begin()) {
-    sd.initErrorHalt("SdFatSdioEX begin() failed");
+bool SdLedsPlayer::load_file(const char *file_name) {
+  if (!SDStatus) {
+    Serial.println("SD card not initialized, can't load file");
+    return false;
   }
-  sd.chvol();
   if (is_file_playing()) {
     current_file.close();
   }
-  if (!current_file.open(file_name, O_RDONLY)) {
-    sd.errorHalt("open failed");
+  current_file = SD.open(file_name);
+  if (!(is_file_playing())) {
+    Serial.println("file open failed");
+    return false;
   }
-  Serial.println("open success");  
+  Serial.println("file open success");
+  return true;
 }
 
 bool SdLedsPlayer::is_file_playing() {
-  return current_file.isOpen();
+  if (current_file) {
+    return true;
+  }
+  else {
+    return false;
+  }
 }
 
 bool SdLedsPlayer::setBrightness(uint8_t brightness) {
@@ -34,7 +51,7 @@ unsigned long SdLedsPlayer::load_next_frame() {
   }
   int bytes_read = current_file.read(frame_buf, bytes_per_frame);
   if (bytes_read < 0) {
-    sd.errorHalt("read failed");
+    Serial.println("file read failed");
   }  
   if(bytes_read == 0) {
     current_file.close();  

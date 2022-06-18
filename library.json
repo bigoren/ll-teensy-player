@@ -1,6 +1,6 @@
 {
     "name": "ll-teensy-player",
-    "version": "1.0.2",
+    "version": "2.0.0",
     "description": "Enables reading led data frames from SD card and sending it to addressable leds. This library should be used on teensy 3.5 to read files from the SD card which contains rgb arrays grouped into frames. each frame is read and written to OctoWS2811 for display on ws2811 led modules.",
     "keywords": "Display",
     "authors":
@@ -9,9 +9,12 @@
         "email": "amirgiraffe@gmail.com",
         "maintainer": true
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bigoren/ll-teensy-player.git"
+    },
     "dependencies":
     {
-        "greiman/SdFat": "1.1.4",
         "paulstoffregen/OctoWS2811": "^1.4"
     }
 }
