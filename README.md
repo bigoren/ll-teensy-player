@@ -32,4 +32,5 @@ To detect if a new file should be loaded, user can call `bool is_file_playing()`
 
 # Added features
 - `bool setBrightness()` function to set global brightness levels (0-255), default is full brightness (255)
-- load_file() function now supports loading of new file before previous file finished, replacing it with new file
+- `load_file()` function now supports loading of new file before previous file finished, replacing it with new file
+- `void stop_file()` function, closes the currently playing file if there is one playing

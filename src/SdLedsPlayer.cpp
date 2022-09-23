@@ -40,6 +40,16 @@ bool SdLedsPlayer::is_file_playing() {
   }
 }
 
+void SdLedsPlayer::stop_file() {
+  if (is_file_playing()) {
+    current_file.close();
+    for(int i=0; i< total_pixels; i++) {
+      leds.setPixel(i, 0, 0, 0);
+    }
+    leds.show();
+  }
+}
+
 bool SdLedsPlayer::setBrightness(uint8_t brightness) {
   brightFactor = brightness;
   return true;

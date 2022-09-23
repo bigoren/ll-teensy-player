@@ -32,6 +32,8 @@ public:
   bool load_file(const char *file_name);
   // return true if there is a file loaded, and there are more frames ready for display
   bool is_file_playing();
+  // stop the current file from playing
+  void stop_file();
 
 private:
   // setup config
