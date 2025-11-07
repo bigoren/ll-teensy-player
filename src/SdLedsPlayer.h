@@ -5,16 +5,20 @@
 #include "OctoWS2811.h"
 
 
-class SdLedsPlayer 
+class SdLedsPlayer
 {
 
 public:
-SdLedsPlayer(unsigned int leds_per_strip, void *display_memory, void *drawing_memory) :
-  total_pixels(leds_per_strip * NUM_OF_STRIPS),
-  bytes_per_frame(TIME_HEADER_SIZE + (total_pixels * CHANNELS_PER_PIXEL)),
-  leds(leds_per_strip, display_memory, drawing_memory, WS2811_GRB | WS2811_800kHz)
+SdLedsPlayer(unsigned int max_leds_per_strip, void *display_memory, void *drawing_memory) :
+  leds(max_leds_per_strip, display_memory, drawing_memory, WS2811_GRB | WS2811_800kHz)
 {
-  frame_buf = (uint8_t *)malloc(bytes_per_frame);
+  frame_buf = nullptr;
+}
+
+~SdLedsPlayer() {
+  if (frame_buf != nullptr) {
+    free(frame_buf);
+  }
 }
 
 public:
@@ -28,7 +32,7 @@ public:
   bool setBrightness(uint8_t brightness);
 
 public:
-  // read a new file from sd card for led display
+  // read a new file from sd card for led display. Reads and stores the max string length from first 2 bytes.
   bool load_file(const char *file_name);
   // return true if there is a file loaded, and there are more frames ready for display
   bool is_file_playing();
@@ -40,20 +44,21 @@ private:
   static const int NUM_OF_STRIPS = 8;
   static const int CHANNELS_PER_PIXEL = 3; // DO NOT CHANGE!
   static const int TIME_HEADER_SIZE = 4; // DO NOT CHANGE!
-  const int total_pixels;
-  const int bytes_per_frame;
   uint8_t brightFactor = 255;
 
-private:
+  private:
   // OctoWS2811 stuff
   OctoWS2811 leds;
 
-private:
+  private:
   // Sd stuff
   uint8_t *frame_buf;
   bool SDStatus;
   File current_file;
-  
+  uint16_t max_string_len;
+  int total_pixels;
+  int bytes_per_frame;
+
 };
 
 

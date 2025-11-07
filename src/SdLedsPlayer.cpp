@@ -10,8 +10,8 @@ bool SdLedsPlayer::setup() {
     Serial.print("SD card begin() failed using pin: "); Serial.println(SDCARD_CS_PIN);
     return false;
   }
-  leds.begin();  
-  return true;  
+  leds.begin();
+  return true;
 }
 
 bool SdLedsPlayer::load_file(const char *file_name) {
@@ -28,6 +28,38 @@ bool SdLedsPlayer::load_file(const char *file_name) {
     return false;
   }
   Serial.println("file open success");
+
+  // Read first 2 bytes which are expected to be the max string length
+  uint8_t byte1, byte2;
+  if (current_file.read(&byte1, 1) != 1 || current_file.read(&byte2, 1) != 1) {
+    Serial.println("failed to read first 2 bytes");
+    current_file.close();
+    return false;
+  }
+
+  // Combine the two bytes into a 16-bit unsigned number (little-endian) and store it
+  max_string_len = (byte2 << 8) | byte1;
+  total_pixels = max_string_len * NUM_OF_STRIPS;
+  // Calculate and store bytes_per_frame
+  bytes_per_frame = TIME_HEADER_SIZE + (total_pixels * CHANNELS_PER_PIXEL);
+
+  // Allocate frame buffer based on bytes_per_frame
+  // Free existing buffer if it exists
+  if (frame_buf != nullptr) {
+    free(frame_buf);
+  }
+  frame_buf = (uint8_t *)malloc(bytes_per_frame);
+  if (frame_buf == nullptr) {
+    Serial.println("Failed to allocate frame buffer");
+    current_file.close();
+    return false;
+  }
+
+  Serial.print("Max string length: ");
+  Serial.println(max_string_len);
+  Serial.print("Bytes per frame: ");
+  Serial.println(bytes_per_frame);
+
   return true;
 }
 
@@ -59,21 +91,22 @@ unsigned long SdLedsPlayer::load_next_frame() {
   if(!is_file_playing()) {
     return 0;
   }
+
   int bytes_read = current_file.read(frame_buf, bytes_per_frame);
   if (bytes_read < 0) {
     Serial.println("file read failed");
-  }  
+  }
   if(bytes_read == 0) {
-    current_file.close();  
+    current_file.close();
     return 0;
   }
   if(bytes_read < bytes_per_frame) {
     Serial.print("read frame with missing bytes.");
     return 0;
   }
-  unsigned long timestamp = ( (frame_buf[3] << 24) 
-                   + (frame_buf[2] << 16) 
-                   + (frame_buf[1] << 8) 
+  unsigned long timestamp = ( (frame_buf[3] << 24)
+                   + (frame_buf[2] << 16)
+                   + (frame_buf[1] << 8)
                    + (frame_buf[0] ));
   uint8_t r,g,b;
   for(int i=0; i< total_pixels; i++) {
