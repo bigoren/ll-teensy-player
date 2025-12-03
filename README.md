@@ -10,7 +10,6 @@ Download the library as zip. open Arduino IDE and go to Sketch -> Include Librar
 User should have micro SD card with compatible files, in the format specified below.
 Goto File -> Examples -> ll-teensy-player to see a few examples on how to use.
 To use the library, `#include "SdLedsPlayer.h"` in your code, then define an object of type `SdLedsPlayer`.
-The object constructor receives number of pixels in each of the 8 strings, and two buffers for led data which the user mush define and supply to the library.
 
 # Main loop
 The library let the user handle the main loop, so that extra logic can be done between every frame.
@@ -19,7 +18,7 @@ User should call the function `bool setup()` once to initialize the object.
 
 Then call the function `bool load_file(const char *file_name)` to open a new file from the SD for display.
 The loaded file format should contain:
-- 2 bytes max string length
+- 2 bytes `max_string_length` header
 - N frames
 - Each frame contains 4 bytes of timestamp data and (8 * max_leds_per_strip) pixels.
 - Each pixel should contain 3 bytes of data. the data will be sent to the LED modules in the order found in the file, so user should match the file's RGB ordering to the LED hardware RGB order.
