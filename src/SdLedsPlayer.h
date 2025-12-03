@@ -9,15 +9,26 @@ class SdLedsPlayer
 {
 
 public:
-SdLedsPlayer(unsigned int max_leds_per_strip, void *display_memory, void *drawing_memory) :
-  leds(max_leds_per_strip, display_memory, drawing_memory, WS2811_GRB | WS2811_800kHz)
+SdLedsPlayer()
 {
   frame_buf = nullptr;
+  leds = nullptr;
+  display_memory = nullptr;
+  drawing_memory = nullptr;
 }
 
 ~SdLedsPlayer() {
   if (frame_buf != nullptr) {
     free(frame_buf);
+  }
+  if (leds != nullptr) {
+    delete leds;
+  }
+  if (display_memory != nullptr) {
+    free(display_memory);
+  }
+  if (drawing_memory != nullptr) {
+    free(drawing_memory);
   }
 }
 
@@ -48,16 +59,18 @@ private:
 
   private:
   // OctoWS2811 stuff
-  OctoWS2811 leds;
+  OctoWS2811* leds;
+  void* display_memory;
+  void* drawing_memory;
+  uint16_t max_string_len;
+  int total_pixels;
+  int bytes_per_frame;
 
   private:
   // Sd stuff
   uint8_t *frame_buf;
   bool SDStatus;
   File current_file;
-  uint16_t max_string_len;
-  int total_pixels;
-  int bytes_per_frame;
 
 };
 

@@ -13,7 +13,6 @@ bool SdLedsPlayer::setup()
         Serial.println(SDCARD_CS_PIN);
         return false;
     }
-    leds.begin();
     return true;
 }
 
@@ -49,7 +48,8 @@ bool SdLedsPlayer::load_file(const char *file_name)
     max_string_len = (byte2 << 8) | byte1;
     // Calculate and store total_pixels and bytes_per_frame
     total_pixels = max_string_len * NUM_OF_STRIPS;
-    bytes_per_frame = TIME_HEADER_SIZE + (total_pixels * CHANNELS_PER_PIXEL);
+    int pixels_in_bytes = total_pixels * CHANNELS_PER_PIXEL;
+    bytes_per_frame = TIME_HEADER_SIZE + pixels_in_bytes;
 
     // Allocate frame buffer based on bytes_per_frame
     // Free existing buffer if it exists
@@ -64,6 +64,60 @@ bool SdLedsPlayer::load_file(const char *file_name)
         current_file.close();
         return false;
     }
+
+    // Allocate OctoWS2811 memory and object
+    // Free existing LED resources if they exist (for reloading files with different sizes)
+    if (leds != nullptr)
+    {
+        delete leds;
+        leds = nullptr;
+    }
+    if (display_memory != nullptr)
+    {
+        free(display_memory);
+        display_memory = nullptr;
+    }
+    if (drawing_memory != nullptr)
+    {
+        free(drawing_memory);
+        drawing_memory = nullptr;
+    }
+
+    // Allocate display and drawing memory for OctoWS2811
+    display_memory = malloc(pixels_in_bytes);
+    drawing_memory = malloc(pixels_in_bytes);
+
+    if (display_memory == nullptr || drawing_memory == nullptr)
+    {
+        Serial.println("Failed to allocate LED memory buffers");
+        if (display_memory != nullptr) free(display_memory);
+        if (drawing_memory != nullptr) free(drawing_memory);
+        display_memory = nullptr;
+        drawing_memory = nullptr;
+        free(frame_buf);
+        frame_buf = nullptr;
+        current_file.close();
+        return false;
+    }
+
+    // Create OctoWS2811 object
+    leds = new OctoWS2811(max_string_len, display_memory, drawing_memory, WS2811_GRB | WS2811_800kHz);
+    if (leds == nullptr)
+    {
+        Serial.println("Failed to create OctoWS2811 object");
+        free(display_memory);
+        free(drawing_memory);
+        free(frame_buf);
+        display_memory = nullptr;
+        drawing_memory = nullptr;
+        frame_buf = nullptr;
+        current_file.close();
+        return false;
+    }
+
+    // Initialize the LED strips
+    leds->begin();
+    Serial.println("OctoWS2811 initialized");
 
     Serial.print("Max string length: ");
     Serial.println(max_string_len);
@@ -90,11 +144,14 @@ void SdLedsPlayer::stop_file()
     if (is_file_playing())
     {
         current_file.close();
-        for (int i = 0; i < total_pixels; i++)
+        if (leds != nullptr)
         {
-            leds.setPixel(i, 0, 0, 0);
+            for (int i = 0; i < total_pixels; i++)
+            {
+                leds->setPixel(i, 0, 0, 0);
+            }
+            leds->show();
         }
-        leds.show();
     }
 }
 
@@ -133,12 +190,15 @@ unsigned long SdLedsPlayer::load_next_frame()
         r = (frame_buf[3 * i + TIME_HEADER_SIZE] * brightFactor) >> 8;
         g = (frame_buf[3 * i + 1 + TIME_HEADER_SIZE] * brightFactor) >> 8;
         b = (frame_buf[3 * i + 2 + TIME_HEADER_SIZE] * brightFactor) >> 8;
-        leds.setPixel(i, r, g, b);
+        leds->setPixel(i, r, g, b);
     }
     return timestamp;
 }
 
 void SdLedsPlayer::show_next_frame()
 {
-    leds.show();
+    if (leds != nullptr)
+    {
+        leds->show();
+    }
 }
