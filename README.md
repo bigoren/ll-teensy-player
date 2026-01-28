@@ -30,6 +30,10 @@ Then user can apply any desired appl-logic and call the function `void show_next
 To detect if a new file should be loaded, user can call `bool is_file_playing()`. If the function returns `false`, a new file should be loaded to the library.
 
 # Added features
-- `bool setBrightness()` function to set global brightness levels (0-255), default is full brightness (255)
-- `bool load_file()` function now supports loading of new file before previous file finished, replacing it with new file, function reads 2 bytes max string length file header
+- `bool setBrightness(brightness)` function to set global brightness levels (0-255), default is full brightness (255)
+- `bool load_file(filename)` function now supports loading of new file before previous file finished, replacing it with new file, function reads 2 bytes max string length file header
 - `void stop_file()` function, closes the currently playing file if there is one playing
+- Logging:
+  - `void enableLogging()` - Initialize the SD log file, current log is named latest.log, older logs named logX.log, the smaller X, the older the log.
+  - `void logFileTransition(filename, triggerType)` - write the filename and trigger event to the SD log file
+  - `logEvent(eventDescription)` - write the event description to the SD log file
