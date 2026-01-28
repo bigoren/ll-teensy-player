@@ -49,6 +49,14 @@ public:
   bool is_file_playing();
   // stop the current file from playing
   void stop_file();
+  // initialize logging with automatic file rotation
+  void enableLogging();
+  // log a file transition with trigger type
+  void logFileTransition(const char* filename, const char* triggerType);
+  // log a general event
+  void logEvent(const char* eventDescription);
+  // close the log file
+  void closeLogging();
 
 private:
   // setup config
@@ -71,6 +79,12 @@ private:
   uint8_t *frame_buf;
   bool SDStatus;
   File current_file;
+
+  // Logging stuff
+  File logFile;
+  bool loggingEnabled = false;
+  bool initializeLogging();
+  bool findAvailableLogNumber(uint16_t& logNumber);
 
 };
 
