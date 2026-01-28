@@ -202,3 +202,108 @@ void SdLedsPlayer::show_next_frame()
         leds->show();
     }
 }
+
+bool SdLedsPlayer::findAvailableLogNumber(uint16_t& logNumber)
+{
+    for (uint16_t i = 1; i <= 99999; i++)
+    {
+        char logFileName[20];
+        snprintf(logFileName, sizeof(logFileName), "LOG%05d.LOG", i);
+        if (!SD.exists(logFileName))
+        {
+            logNumber = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SdLedsPlayer::initializeLogging()
+{
+    if (!SDStatus)
+    {
+        Serial.println("SD card not initialized, can't initialize logging");
+        return false;
+    }
+
+    // Check if latest.log exists
+    if (SD.exists("LATEST.LOG"))
+    {
+        // Find available log number
+        uint16_t logNumber;
+        if (!findAvailableLogNumber(logNumber))
+        {
+            Serial.println("No available log file numbers (0-99999)");
+            return false;
+        }
+
+        // Rename existing latest.log to logX.log
+        char newLogFileName[20];
+        snprintf(newLogFileName, sizeof(newLogFileName), "LOG%05d.LOG", logNumber);
+
+        if (!SD.rename("LATEST.LOG", newLogFileName))
+        {
+            Serial.print("Failed to rename LATEST.LOG to ");
+            Serial.println(newLogFileName);
+            return false;
+        }
+        Serial.print("Renamed LATEST.LOG to ");
+        Serial.println(newLogFileName);
+    }
+
+    // Open new latest.log file
+    logFile = SD.open("LATEST.LOG", FILE_WRITE);
+    if (!logFile)
+    {
+        Serial.println("Failed to create LATEST.LOG");
+        return false;
+    }
+
+    loggingEnabled = true;
+    Serial.println("Logging initialized - LATEST.LOG created");
+    return true;
+}
+
+void SdLedsPlayer::enableLogging()
+{
+    if (initializeLogging())
+    {
+        logFile.println("=== New Logging Session Started ===");
+        logFile.flush();
+    }
+}
+
+void SdLedsPlayer::logFileTransition(const char* filename, const char* triggerType)
+{
+    if (!loggingEnabled || !logFile)
+        return;
+
+    logFile.print(millis());
+    logFile.print(" - File: ");
+    logFile.print(filename);
+    logFile.print(" | Trigger: ");
+    logFile.println(triggerType);
+    logFile.flush();
+}
+
+void SdLedsPlayer::logEvent(const char* eventDescription)
+{
+    if (!loggingEnabled || !logFile)
+        return;
+
+    logFile.print(millis());
+    logFile.print(" - Event: ");
+    logFile.println(eventDescription);
+    logFile.flush();
+}
+
+void SdLedsPlayer::closeLogging()
+{
+    if (logFile)
+    {
+        logFile.println("=== Logging Session Ended ===");
+        logFile.close();
+        loggingEnabled = false;
+        Serial.println("Logging closed");
+    }
+}
